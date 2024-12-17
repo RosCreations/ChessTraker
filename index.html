@@ -14,6 +14,7 @@
             align-items: center;
             margin: 10px;
             background-color: #fff;
+            overflow: hidden; /* Fenster fixieren */
         }
         #board {
             display: grid;
@@ -36,13 +37,13 @@
             justify-content: center;
             align-items: center;
             position: relative;
-            font-size: 2rem; /* Einheitliche Figurengröße */
+            font-size: 2rem;
         }
         .white-square {
             background-color: #fff;
         }
         .black-square {
-            background-color: #000;
+            background-color: #888; /* Grau statt Schwarz */
         }
         .draggable {
             cursor: pointer;
@@ -52,11 +53,11 @@
         }
         .white-piece {
             color: #fff;
-            text-shadow: 0 0 1px #000; /* Dünne schwarze Kontur */
+            text-shadow: 0 0 1px #000;
         }
         .black-piece {
             color: #000;
-            text-shadow: 0 0 1px #fff; /* Dünne weiße Kontur */
+            text-shadow: 0 0 1px #fff;
         }
         button {
             margin: 5px;
@@ -74,7 +75,7 @@
                 max-width: 95vmin;
             }
             .square {
-                font-size: 4vw; /* Einheitliche Skalierung für kleine Bildschirme */
+                font-size: 4vw;
             }
         }
     </style>
@@ -122,6 +123,7 @@
         }
 
         function handleTouchStart(event) {
+            event.preventDefault(); /* Scrollen verhindern */
             const square = event.target.parentElement;
             touchStartSquare = square.dataset.coord;
         }
@@ -159,7 +161,6 @@
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF();
             pdf.text("Schachpartie Züge:", 10, 10);
-
             moveHistory.forEach((move, index) => {
                 pdf.text(`${index + 1}. ${move}`, 10, 20 + index * 10);
             });
@@ -176,4 +177,5 @@
     </script>
 </body>
 </html>
+
 
