@@ -169,13 +169,17 @@ function logMove(move) {
             }
         }
 
-        function saveGame() {
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF();
-            pdf.text("Schachpartie Züge:", 10, 10);
-            moveHistory.forEach((move, index) => pdf.text(`${index + 1}. ${move}`, 10, 20 + index * 10));
-            pdf.save('schachpartie.pdf');
-        }
+      function saveGame() {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
+    pdf.setFont("helvetica", "normal"); // Ändere zu einer Schrift, die Symbole unterstützt
+    pdf.text("Schachpartie Züge:", 10, 10);
+
+    moveHistory.forEach((move, index) => {
+        pdf.text(`${index + 1}. ${move}`, 10, 20 + index * 10);
+    });
+    pdf.save('schachpartie.pdf');
+}
 
         function newGame() {
             game.reset();
