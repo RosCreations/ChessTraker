@@ -43,8 +43,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: calc(3vw + 8px);
             position: relative;
+            aspect-ratio: 1 / 1; /* Stellt sicher, dass jedes Feld quadratisch ist */
         }
         .white-square {
             background-color: #fff;
@@ -116,8 +116,12 @@
                         const pieceElement = document.createElement('div');
                         pieceElement.textContent = getPieceSymbol(piece.type, piece.color);
                         pieceElement.className = `draggable ${piece.color === 'w' ? 'white-piece' : 'black-piece'}`;
+                        pieceElement.draggable = true;
+                        pieceElement.addEventListener('dragstart', handleDragStart);
                         square.appendChild(pieceElement);
                     }
+                    square.addEventListener('dragover', handleDragOver);
+                    square.addEventListener('drop', handleDrop);
                     boardElement.appendChild(square);
                 }
             }
@@ -128,6 +132,26 @@
             return color === 'b' ? symbols[type] : symbols[type].toUpperCase();
         }
 
+        function handleDragStart(event) {
+            event.dataTransfer.setData('text/plain', event.target.parentElement.dataset.coord);
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+        }
+
+        function handleDrop(event) {
+            const fromCoord = event.dataTransfer.getData('text/plain');
+            const toCoord = event.target.dataset.coord || event.target.parentElement.dataset.coord;
+            const move = game.move({ from: fromCoord, to: toCoord, promotion: 'q' });
+            if (move) {
+                logMove(move);
+                createBoard();
+            } else {
+                alert('Ungültiger Zug');
+            }
+        }
+
         function logMove(move) {
             const pieceSymbol = getPieceSymbol(move.piece, move.color);
             const moveText = move.captured ? `${pieceSymbol}${move.from}x${move.to}` : `${pieceSymbol}${move.from}-${move.to}`;
@@ -135,14 +159,6 @@
             moveCell.textContent = moveText;
             moveListContainer.appendChild(moveCell);
             moveHistory.push(moveText);
-            ensurePagination();
-        }
-
-        function ensurePagination() {
-            const maxCellsPerPage = 60; // Adjust based on grid
-            if (moveListContainer.children.length > maxCellsPerPage) {
-                moveListContainer.innerHTML += '<div style="page-break-before: always;"></div>';
-            }
         }
 
         function undoMove() {
@@ -158,7 +174,6 @@
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF();
             pdf.text("Schachpartie Züge:", 10, 10);
-
             moveHistory.forEach((move, index) => {
                 pdf.text(`${index + 1}. ${move}`, 10, 20 + (index % 60) * 5);
             });
@@ -176,6 +191,7 @@
     </script>
 </body>
 </html>
+
 
 
 
