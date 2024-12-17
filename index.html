@@ -102,7 +102,7 @@
                     const piece = position[row][col];
                     if (piece) {
                         const pieceElement = document.createElement('div');
-                        pieceElement.textContent = getPieceSymbol(piece.type, piece.color);
+                        pieceElement.textContent = getPieceSymbol(piece.type, piece.color, true);
                         pieceElement.className = `draggable ${piece.color === 'w' ? 'white-piece' : 'black-piece'}`;
                         pieceElement.draggable = true;
                         square.appendChild(pieceElement);
@@ -113,8 +113,10 @@
             addDragAndDrop();
         }
 
-        function getPieceSymbol(type, color) {
-            const symbols = { p: 'B', r: 'R', n: 'N', b: 'L', q: 'Q', k: 'K' }; // Buchstaben-Repräsentation
+        function getPieceSymbol(type, color, unicode = false) {
+            const symbols = unicode
+                ? { p: '♟', r: '♜', n: '♞', b: '♝', q: '♛', k: '♚' }
+                : { p: 'B', r: 'R', n: 'N', b: 'L', q: 'Q', k: 'K' };
             return color === 'b' ? symbols[type].toLowerCase() : symbols[type];
         }
 
@@ -150,11 +152,11 @@
 
         function logMove(move) {
             const listItem = document.createElement('li');
-            const pieceSymbol = getPieceSymbol(move.piece, move.color);
+            const pieceSymbol = getPieceSymbol(move.piece, move.color, true);
             const moveText = move.captured ? `${pieceSymbol}${move.from}x${move.to}` : `${pieceSymbol}${move.from}-${move.to}`;
             listItem.textContent = moveText;
             moveList.appendChild(listItem);
-            moveHistory.push(moveText);
+            moveHistory.push(moveText.replace(/[\u2654-\u265F]/, getPieceSymbol(move.piece, move.color)));
         }
 
         function undoMove() {
@@ -189,3 +191,4 @@
     </script>
 </body>
 </html>
+
