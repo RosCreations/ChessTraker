@@ -35,8 +35,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 3.5vw;
             position: relative;
+            font-size: 2rem; /* Einheitliche Figurengröße */
         }
         .white-square {
             background-color: #fff;
@@ -46,19 +46,17 @@
         }
         .draggable {
             cursor: pointer;
-            width: 90%;
-            height: 90%;
             display: flex;
             justify-content: center;
             align-items: center;
         }
         .white-piece {
             color: #fff;
-            text-shadow: 0 0 1px #000;
+            text-shadow: 0 0 1px #000; /* Dünne schwarze Kontur */
         }
         .black-piece {
             color: #000;
-            text-shadow: 0 0 1px #fff;
+            text-shadow: 0 0 1px #fff; /* Dünne weiße Kontur */
         }
         button {
             margin: 5px;
@@ -76,7 +74,7 @@
                 max-width: 95vmin;
             }
             .square {
-                font-size: 5vw;
+                font-size: 4vw; /* Einheitliche Skalierung für kleine Bildschirme */
             }
         }
     </style>
@@ -146,7 +144,7 @@
         function logMove(move) {
             const pieceSymbol = getPieceSymbol(move.piece, move.color);
             const moveText = move.captured ? `${pieceSymbol}${move.from}x${move.to}` : `${pieceSymbol}${move.from}-${move.to}`;
-            moveHistory.push(moveText); // Speichere die Züge nur im Hintergrund
+            moveHistory.push(moveText);
         }
 
         function undoMove() {
