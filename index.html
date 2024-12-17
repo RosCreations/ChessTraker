@@ -19,10 +19,10 @@
             display: grid;
             grid-template-columns: repeat(8, 1fr);
             grid-template-rows: repeat(8, 1fr);
-            width: 90vw; /* Optimiert für iPhone */
-            max-width: 100%; /* Kein Überlaufen */
+            width: 90vw;
+            max-width: 90vmin;
+            aspect-ratio: 1 / 1;
             margin: auto;
-            aspect-ratio: 1 / 1; /* Quadratisch */
             border: 2px solid #000;
         }
         h2 {
@@ -35,7 +35,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 3.5vw; /* Skalierung für iPhone */
+            font-size: 3.5vw;
+            position: relative;
         }
         .white-square {
             background-color: #fff;
@@ -44,20 +45,20 @@
             background-color: #000;
         }
         .draggable {
-            cursor: grab;
-            width: 70%; /* Kleinere Figuren */
-            height: 70%;
+            cursor: pointer;
+            width: 90%;
+            height: 90%;
             display: flex;
             justify-content: center;
             align-items: center;
         }
         .white-piece {
             color: #fff;
-            text-shadow: 0 0 1px #000; /* Dünne schwarze Umrandung */
+            text-shadow: 0 0 1px #000;
         }
         .black-piece {
             color: #000;
-            text-shadow: 0 0 1px #fff; /* Dünne weiße Umrandung */
+            text-shadow: 0 0 1px #fff;
         }
         button {
             margin: 5px;
@@ -72,9 +73,10 @@
         @media (max-width: 768px) {
             #board {
                 width: 95vw;
+                max-width: 95vmin;
             }
             .square {
-                font-size: 5vw; /* Größe für kleine Bildschirme */
+                font-size: 5vw;
             }
         }
     </style>
@@ -92,6 +94,7 @@
         const boardElement = document.getElementById('board');
         const game = new Chess();
         let moveHistory = [];
+        let touchStartSquare = null;
 
         function createBoard() {
             boardElement.innerHTML = '';
@@ -106,12 +109,10 @@
                         const pieceElement = document.createElement('div');
                         pieceElement.textContent = getPieceSymbol(piece.type, piece.color);
                         pieceElement.className = `draggable ${piece.color === 'w' ? 'white-piece' : 'black-piece'}`;
-                        pieceElement.draggable = true;
-                        pieceElement.addEventListener('dragstart', handleDragStart);
+                        pieceElement.addEventListener('touchstart', handleTouchStart);
+                        pieceElement.addEventListener('touchend', handleTouchEnd);
                         square.appendChild(pieceElement);
                     }
-                    square.addEventListener('dragover', handleDragOver);
-                    square.addEventListener('drop', handleDrop);
                     boardElement.appendChild(square);
                 }
             }
@@ -122,24 +123,24 @@
             return color === 'b' ? symbols[type] : symbols[type].toUpperCase();
         }
 
-        function handleDragStart(event) {
-            event.dataTransfer.setData('text/plain', event.target.parentElement.dataset.coord);
+        function handleTouchStart(event) {
+            const square = event.target.parentElement;
+            touchStartSquare = square.dataset.coord;
         }
 
-        function handleDragOver(event) {
-            event.preventDefault();
-        }
-
-        function handleDrop(event) {
-            const fromCoord = event.dataTransfer.getData('text/plain');
-            const toCoord = event.target.dataset.coord || event.target.parentElement.dataset.coord;
-            const move = game.move({ from: fromCoord, to: toCoord, promotion: 'q' });
-            if (move) {
-                logMove(move);
-                createBoard();
-            } else {
-                alert('Ungültiger Zug');
+        function handleTouchEnd(event) {
+            const touch = event.changedTouches[0];
+            const endSquare = document.elementFromPoint(touch.clientX, touch.clientY)?.dataset.coord;
+            if (touchStartSquare && endSquare) {
+                const move = game.move({ from: touchStartSquare, to: endSquare, promotion: 'q' });
+                if (move) {
+                    logMove(move);
+                    createBoard();
+                } else {
+                    alert('Ungültiger Zug');
+                }
             }
+            touchStartSquare = null;
         }
 
         function logMove(move) {
@@ -177,3 +178,4 @@
     </script>
 </body>
 </html>
+
