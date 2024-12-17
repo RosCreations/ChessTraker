@@ -113,10 +113,10 @@
             addDragAndDrop();
         }
 
-      function getPieceSymbol(type, color) {
-    const symbols = { p: 'B', r: 'R', n: 'N', b: 'B', q: 'Q', k: 'K' }; // Buchstaben statt Symbole
-    return color === 'b' ? symbols[type].toLowerCase() : symbols[type];
-}
+        function getPieceSymbol(type, color) {
+            const symbols = { p: 'B', r: 'R', n: 'N', b: 'L', q: 'Q', k: 'K' }; // Buchstaben-Repräsentation
+            return color === 'b' ? symbols[type].toLowerCase() : symbols[type];
+        }
 
         function addDragAndDrop() {
             document.querySelectorAll('.draggable').forEach(piece => {
@@ -148,17 +148,14 @@
             }
         }
 
-function logMove(move) {
-    const listItem = document.createElement('li');
-    const pieceImages = {
-        p: "♟", r: "♜", n: "♞", b: "♝", q: "♛", k: "♚" // Ersetze später durch Bilder
-    };
-    const pieceSymbol = move.piece === 'p' ? '' : pieceImages[move.piece];
-    const moveText = move.captured ? `${pieceSymbol}${move.from}x${move.to}` : `${pieceSymbol}${move.from}-${move.to}`;
-    listItem.textContent = moveText;
-    moveList.appendChild(listItem);
-    moveHistory.push(moveText);
-}
+        function logMove(move) {
+            const listItem = document.createElement('li');
+            const pieceSymbol = getPieceSymbol(move.piece, move.color);
+            const moveText = move.captured ? `${pieceSymbol}${move.from}x${move.to}` : `${pieceSymbol}${move.from}-${move.to}`;
+            listItem.textContent = moveText;
+            moveList.appendChild(listItem);
+            moveHistory.push(moveText);
+        }
 
         function undoMove() {
             const undoneMove = game.undo();
@@ -169,17 +166,17 @@ function logMove(move) {
             }
         }
 
-function saveGame() {
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF();
-    pdf.text("Schachpartie Züge:", 10, 10);
+       function saveGame() {
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF();
+          pdf.setFont("helvetica", "normal");
+          pdf.text("Schachpartie Züge:", 10, 10);
 
-    moveHistory.forEach((move, index) => {
-        pdf.text(`${index + 1}. ${move}`, 10, 20 + index * 10);
-    });
-    pdf.save('schachpartie.pdf');
-}
-
+          moveHistory.forEach((move, index) => {
+          pdf.text(`${index + 1}. ${move}`, 10, 20 + index * 10);
+        });
+        pdf.save('schachpartie.pdf');
+    }
 
         function newGame() {
             game.reset();
