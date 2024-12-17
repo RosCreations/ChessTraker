@@ -21,7 +21,6 @@
             grid-template-rows: repeat(8, 1fr);
             width: 100%;
             max-width: 400px;
-            height: auto;
             aspect-ratio: 1 / 1;
             border: 2px solid #000;
         }
@@ -44,7 +43,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 2rem;
+            font-size: 2.5vw;
             position: relative;
             touch-action: none; /* Wichtig für Touch-Unterstützung */
         }
@@ -56,6 +55,11 @@
         }
         .draggable {
             cursor: grab;
+            width: 80%;
+            height: 80%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .white-piece {
             color: #fff;
@@ -94,8 +98,6 @@
         const moveList = document.getElementById('moveList');
         const game = new Chess();
         let moveHistory = [];
-        let draggedPiece = null;
-        let sourceSquare = null;
 
         function createBoard() {
             boardElement.innerHTML = '';
@@ -111,7 +113,6 @@
                         pieceElement.textContent = getPieceSymbol(piece.type, piece.color);
                         pieceElement.className = `draggable ${piece.color === 'w' ? 'white-piece' : 'black-piece'}`;
                         pieceElement.draggable = true;
-                        addTouchListeners(pieceElement, square);
                         square.appendChild(pieceElement);
                     }
                     boardElement.appendChild(square);
@@ -123,32 +124,6 @@
         function getPieceSymbol(type, color) {
             const symbols = { p: '♟', r: '♜', n: '♞', b: '♝', q: '♛', k: '♚' };
             return color === 'b' ? symbols[type] : symbols[type].toUpperCase();
-        }
-
-        function addTouchListeners(piece, square) {
-            piece.addEventListener('touchstart', (e) => {
-                draggedPiece = piece;
-                sourceSquare = square.dataset.coord;
-            });
-
-            piece.addEventListener('touchend', (e) => {
-                const touch = e.changedTouches[0];
-                const targetElement = document.elementFromPoint(touch.clientX, touch.clientY);
-                const targetSquare = targetElement?.dataset.coord || targetElement?.parentElement?.dataset.coord;
-                if (sourceSquare && targetSquare) {
-                    handleMove(sourceSquare, targetSquare);
-                }
-                draggedPiece = null;
-                sourceSquare = null;
-            });
-        }
-
-        function handleMove(from, to) {
-            const move = game.move({ from, to, promotion: 'q' });
-            if (move) {
-                createBoard();
-                logMove(move);
-            }
         }
 
         function addDragAndDrop() {
@@ -175,6 +150,16 @@
             const fromCoord = event.dataTransfer.getData('text/plain');
             const toCoord = event.target.dataset.coord || event.target.parentElement.dataset.coord;
             handleMove(fromCoord, toCoord);
+        }
+
+        function handleMove(from, to) {
+            const move = game.move({ from, to, promotion: 'q' });
+            if (move) {
+                createBoard();
+                logMove(move);
+            } else {
+                alert('Ungültiger Zug!');
+            }
         }
 
         function logMove(move) {
