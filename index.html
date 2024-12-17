@@ -25,17 +25,6 @@
             aspect-ratio: 1 / 1; /* Quadratisch */
             border: 2px solid #000;
         }
-        #log {
-            margin-top: 10px;
-            border: 2px solid #000;
-            padding: 5px;
-            width: 90%;
-            height: 100px; /* Kleinere Höhe */
-            overflow-y: auto;
-            font-size: 0.7rem; /* Schrift kleiner */
-            line-height: 1.2;
-            background-color: #fff;
-        }
         h2 {
             margin-top: 0;
             color: #000;
@@ -46,7 +35,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 4vw; /* Skaliert proportional mit der Bildschirmbreite */
+            font-size: 3.5vw; /* Skalierung für iPhone */
         }
         .white-square {
             background-color: #fff;
@@ -56,19 +45,19 @@
         }
         .draggable {
             cursor: grab;
-            width: 80%;
-            height: 80%;
+            width: 70%; /* Kleinere Figuren */
+            height: 70%;
             display: flex;
             justify-content: center;
             align-items: center;
         }
         .white-piece {
             color: #fff;
-            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            text-shadow: 0 0 1px #000; /* Dünne schwarze Umrandung */
         }
         .black-piece {
             color: #000;
-            text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+            text-shadow: 0 0 1px #fff; /* Dünne weiße Umrandung */
         }
         button {
             margin: 5px;
@@ -80,23 +69,12 @@
             border-radius: 4px;
             font-size: 0.8rem;
         }
-        ol {
-            padding-left: 20px;
-            margin: 0;
-            font-size: 0.7rem; /* Kleinere Schrift */
-        }
-        li {
-            white-space: nowrap;
-        }
         @media (max-width: 768px) {
             #board {
                 width: 95vw;
             }
             .square {
                 font-size: 5vw; /* Größe für kleine Bildschirme */
-            }
-            #log {
-                height: 100px; /* Kleinere Logbox */
             }
         }
     </style>
@@ -109,14 +87,9 @@
         <button onclick="undoMove()">Rückzug</button>
         <div id="board"></div>
     </div>
-    <div id="log">
-        <h2>Zugliste</h2>
-        <ol id="moveList"></ol>
-    </div>
 
     <script>
         const boardElement = document.getElementById('board');
-        const moveList = document.getElementById('moveList');
         const game = new Chess();
         let moveHistory = [];
 
@@ -172,17 +145,13 @@
         function logMove(move) {
             const pieceSymbol = getPieceSymbol(move.piece, move.color);
             const moveText = move.captured ? `${pieceSymbol}${move.from}x${move.to}` : `${pieceSymbol}${move.from}-${move.to}`;
-            const listItem = document.createElement('li');
-            listItem.textContent = moveText;
-            moveList.appendChild(listItem);
-            moveHistory.push(moveText);
+            moveHistory.push(moveText); // Speichere die Züge nur im Hintergrund
         }
 
         function undoMove() {
             const undoneMove = game.undo();
             if (undoneMove) {
                 moveHistory.pop();
-                moveList.lastChild?.remove();
                 createBoard();
             }
         }
@@ -201,7 +170,6 @@
         function newGame() {
             game.reset();
             moveHistory = [];
-            moveList.innerHTML = '';
             createBoard();
         }
 
