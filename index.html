@@ -150,13 +150,15 @@
 
 function logMove(move) {
     const listItem = document.createElement('li');
-    const pieceSymbol = getPieceSymbol(move.piece, move.color);
+    const pieceImages = {
+        p: "♟", r: "♜", n: "♞", b: "♝", q: "♛", k: "♚" // Ersetze später durch Bilder
+    };
+    const pieceSymbol = move.piece === 'p' ? '' : pieceImages[move.piece];
     const moveText = move.captured ? `${pieceSymbol}${move.from}x${move.to}` : `${pieceSymbol}${move.from}-${move.to}`;
     listItem.textContent = moveText;
     moveList.appendChild(listItem);
     moveHistory.push(moveText);
 }
-
 
         function undoMove() {
             const undoneMove = game.undo();
