@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schachpartie Dokumentation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.12.0/chess.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            margin: 20px;
+            background-color: #fff;
+        }
+        #board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            width: 400px;
+            height: 400px;
+            border: 2px solid #000;
+        }
+        #log {
+            margin-left: 20px;
+            border: 2px solid #000;
+            padding: 10px;
+            width: 200px;
+            height: 400px;
+            overflow-y: auto;
+            background-color: #fff;
+            color: #000;
+        }
+        h2 {
+            margin-top: 0;
+            color: #000;
+        }
+        .square {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            position: relative;
+        }
+        .white-square {
+            background-color: #fff;
+        }
+        .black-square {
+            background-color: #000;
+        }
+        .draggable {
+            cursor: grab;
+        }
+        .white-piece {
+            color: #fff;
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+        }
+        .black-piece {
+            color: #000;
+            text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+        }
+        button {
+            margin: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            border: none;
+            background-color: #333;
+            color: #fff;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h2>Schachbrett</h2>
+        <button onclick="newGame()">New</button>
+        <button onclick="saveGame()">Save</button>
+        <button onclick="undoMove()">Rückzug</button>
+        <div id="board"></div>
+    </div>
+    <div id="log">
+        <h2>Zugliste</h2>
+        <ol id="moveList"></ol>
+    </div>
+
+    <script>
+        const boardElement = document.getElementById('board');
+        const moveList = document.getElementById('moveList');
+        const game = new Chess();
+        let moveHistory = [];
+
+        function createBoard() {
+            boardElement.innerHTML = '';
+            const position = game.board();
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const square = document.createElement('div');
+                    square.className = 'square ' + ((row + col) % 2 === 0 ? 'white-square' : 'black-square');
+                    square.dataset.coord = `${'abcdefgh'[col]}${8 - row}`;
+                    const piece = position[row][col];
+                    if (piece) {
+                        const pieceElement = document.createElement('div');
+                        pieceElement.textContent = getPieceSymbol(piece.type, piece.color);
+                        pieceElement.className = `draggable ${piece.color === 'w' ? 'white-piece' : 'black-piece'}`;
+                        pieceElement.draggable = true;
+                        square.appendChild(pieceElement);
+                    }
+                    boardElement.appendChild(square);
+                }
+            }
+            addDragAndDrop();
+        }
+
+        function getPieceSymbol(type, color) {
+            const symbols = { p: '♟', r: '♜', n: '♞', b: '♝', q: '♛', k: '♚' };
+            return color === 'b' ? symbols[type] : symbols[type].toLowerCase();
+        }
+
+        function addDragAndDrop() {
+            document.querySelectorAll('.draggable').forEach(piece => {
+                piece.addEventListener('dragstart', handleDragStart);
+            });
+
+            document.querySelectorAll('.square').forEach(square => {
+                square.addEventListener('dragover', handleDragOver);
+                square.addEventListener('drop', handleDrop);
+            });
+        }
+
+        function handleDragStart(event) {
+            event.dataTransfer.setData('text/plain', event.target.parentElement.dataset.coord);
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            const fromCoord = event.dataTransfer.getData('text/plain');
+            const toCoord = event.target.dataset.coord || event.target.parentElement.dataset.coord;
+            const move = game.move({ from: fromCoord, to: toCoord, promotion: 'q' });
+            if (move) {
+                createBoard();
+                logMove(move);
+            }
+        }
+
+function logMove(move) {
+    const listItem = document.createElement('li');
+    const pieceSymbol = getPieceSymbol(move.piece, move.color);
+    const moveText = move.captured ? `${pieceSymbol}${move.from}x${move.to}` : `${pieceSymbol}${move.from}-${move.to}`;
+    listItem.textContent = moveText;
+    moveList.appendChild(listItem);
+    moveHistory.push(moveText);
+}
+
+
+        function undoMove() {
+            const undoneMove = game.undo();
+            if (undoneMove) {
+                moveHistory.pop();
+                moveList.lastChild?.remove();
+                createBoard();
+            }
+        }
+
+        function saveGame() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+            pdf.text("Schachpartie Züge:", 10, 10);
+            moveHistory.forEach((move, index) => pdf.text(`${index + 1}. ${move}`, 10, 20 + index * 10));
+            pdf.save('schachpartie.pdf');
+        }
+
+        function newGame() {
+            game.reset();
+            moveHistory = [];
+            moveList.innerHTML = '';
+            createBoard();
+        }
+
+        createBoard();
+    </script>
+</body>
+</html>
