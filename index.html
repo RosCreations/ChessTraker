@@ -10,25 +10,28 @@
         body {
             font-family: Arial, sans-serif;
             display: flex;
-            justify-content: space-around;
-            align-items: flex-start;
-            margin: 20px;
+            flex-direction: column;
+            align-items: center;
+            margin: 10px;
             background-color: #fff;
         }
         #board {
             display: grid;
             grid-template-columns: repeat(8, 1fr);
             grid-template-rows: repeat(8, 1fr);
-            width: 400px;
-            height: 400px;
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            aspect-ratio: 1 / 1;
             border: 2px solid #000;
         }
         #log {
-            margin-left: 20px;
+            margin-top: 20px;
             border: 2px solid #000;
             padding: 10px;
-            width: 200px;
-            height: 400px;
+            width: 100%;
+            max-width: 400px;
+            height: 200px;
             overflow-y: auto;
             background-color: #fff;
             color: #000;
@@ -43,6 +46,7 @@
             align-items: center;
             font-size: 2rem;
             position: relative;
+            touch-action: none; /* Wichtig für Touch-Unterstützung */
         }
         .white-square {
             background-color: #fff;
@@ -90,6 +94,8 @@
         const moveList = document.getElementById('moveList');
         const game = new Chess();
         let moveHistory = [];
+        let draggedPiece = null;
+        let sourceSquare = null;
 
         function createBoard() {
             boardElement.innerHTML = '';
@@ -102,9 +108,10 @@
                     const piece = position[row][col];
                     if (piece) {
                         const pieceElement = document.createElement('div');
-                        pieceElement.textContent = getPieceSymbol(piece.type, piece.color, true);
+                        pieceElement.textContent = getPieceSymbol(piece.type, piece.color);
                         pieceElement.className = `draggable ${piece.color === 'w' ? 'white-piece' : 'black-piece'}`;
                         pieceElement.draggable = true;
+                        addTouchListeners(pieceElement, square);
                         square.appendChild(pieceElement);
                     }
                     boardElement.appendChild(square);
@@ -114,9 +121,35 @@
         }
 
         function getPieceSymbol(type, color) {
-    const symbols = { p: '♟', r: '♜', n: '♞', b: '♝', q: '♛', k: '♚' };
-    return color === 'b' ? symbols[type] : symbols[type].toUpperCase();
-}
+            const symbols = { p: '♟', r: '♜', n: '♞', b: '♝', q: '♛', k: '♚' };
+            return color === 'b' ? symbols[type] : symbols[type].toUpperCase();
+        }
+
+        function addTouchListeners(piece, square) {
+            piece.addEventListener('touchstart', (e) => {
+                draggedPiece = piece;
+                sourceSquare = square.dataset.coord;
+            });
+
+            piece.addEventListener('touchend', (e) => {
+                const touch = e.changedTouches[0];
+                const targetElement = document.elementFromPoint(touch.clientX, touch.clientY);
+                const targetSquare = targetElement?.dataset.coord || targetElement?.parentElement?.dataset.coord;
+                if (sourceSquare && targetSquare) {
+                    handleMove(sourceSquare, targetSquare);
+                }
+                draggedPiece = null;
+                sourceSquare = null;
+            });
+        }
+
+        function handleMove(from, to) {
+            const move = game.move({ from, to, promotion: 'q' });
+            if (move) {
+                createBoard();
+                logMove(move);
+            }
+        }
 
         function addDragAndDrop() {
             document.querySelectorAll('.draggable').forEach(piece => {
@@ -141,20 +174,16 @@
             event.preventDefault();
             const fromCoord = event.dataTransfer.getData('text/plain');
             const toCoord = event.target.dataset.coord || event.target.parentElement.dataset.coord;
-            const move = game.move({ from: fromCoord, to: toCoord, promotion: 'q' });
-            if (move) {
-                createBoard();
-                logMove(move);
-            }
+            handleMove(fromCoord, toCoord);
         }
 
         function logMove(move) {
             const listItem = document.createElement('li');
-            const pieceSymbol = getPieceSymbol(move.piece, move.color, true);
+            const pieceSymbol = getPieceSymbol(move.piece, move.color);
             const moveText = move.captured ? `${pieceSymbol}${move.from}x${move.to}` : `${pieceSymbol}${move.from}-${move.to}`;
             listItem.textContent = moveText;
             moveList.appendChild(listItem);
-            moveHistory.push(moveText.replace(/[\u2654-\u265F]/, getPieceSymbol(move.piece, move.color)));
+            moveHistory.push(moveText);
         }
 
         function undoMove() {
@@ -166,17 +195,17 @@
             }
         }
 
-       function saveGame() {
-          const { jsPDF } = window.jspdf;
-          const pdf = new jsPDF();
-          pdf.setFont("helvetica", "normal");
-          pdf.text("Schachpartie Züge:", 10, 10);
+        function saveGame() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+            pdf.setFont("helvetica", "normal");
+            pdf.text("Schachpartie Züge:", 10, 10);
 
-          moveHistory.forEach((move, index) => {
-          pdf.text(`${index + 1}. ${move}`, 10, 20 + index * 10);
-        });
-        pdf.save('schachpartie.pdf');
-    }
+            moveHistory.forEach((move, index) => {
+                pdf.text(`${index + 1}. ${move}`, 10, 20 + index * 10);
+            });
+            pdf.save('schachpartie.pdf');
+        }
 
         function newGame() {
             game.reset();
@@ -189,4 +218,5 @@
     </script>
 </body>
 </html>
+
 
