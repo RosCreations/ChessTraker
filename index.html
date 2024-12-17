@@ -15,6 +15,7 @@
             margin: 10px;
             background-color: #fff;
             overflow: hidden; /* Fenster fixieren */
+            touch-action: none; /* Touch scrollen deaktivieren */
         }
         #board {
             display: grid;
@@ -37,7 +38,7 @@
             justify-content: center;
             align-items: center;
             position: relative;
-            font-size: 2rem;
+            font-size: 3vw; /* Größere Figuren */
         }
         .white-square {
             background-color: #fff;
@@ -53,11 +54,11 @@
         }
         .white-piece {
             color: #fff;
-            text-shadow: 0 0 1px #000;
+            text-shadow: 0 0 1px #000; /* Weiße Figur mit Kontur */
         }
         .black-piece {
             color: #000;
-            text-shadow: 0 0 1px #fff;
+            text-shadow: 0 0 1px #fff; /* Schwarze Figur mit Kontur */
         }
         button {
             margin: 5px;
@@ -71,11 +72,11 @@
         }
         @media (max-width: 768px) {
             #board {
-                width: 95vw;
-                max-width: 95vmin;
+                width: 100vw;
+                max-width: 100vmin;
             }
             .square {
-                font-size: 4vw;
+                font-size: 7vw; /* Größere Figuren auf iPhones */
             }
         }
     </style>
@@ -109,6 +110,7 @@
                         pieceElement.textContent = getPieceSymbol(piece.type, piece.color);
                         pieceElement.className = `draggable ${piece.color === 'w' ? 'white-piece' : 'black-piece'}`;
                         pieceElement.addEventListener('touchstart', handleTouchStart);
+                        pieceElement.addEventListener('touchmove', handleTouchMove);
                         pieceElement.addEventListener('touchend', handleTouchEnd);
                         square.appendChild(pieceElement);
                     }
@@ -126,6 +128,10 @@
             event.preventDefault(); /* Scrollen verhindern */
             const square = event.target.parentElement;
             touchStartSquare = square.dataset.coord;
+        }
+
+        function handleTouchMove(event) {
+            event.preventDefault(); // Scrollen vollständig blockieren
         }
 
         function handleTouchEnd(event) {
@@ -177,3 +183,4 @@
     </script>
 </body>
 </html>
+
